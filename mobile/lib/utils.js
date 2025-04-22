@@ -1,0 +1,16 @@
+// Hàm định dạng ngày tạo tài khoản, ví dụ: "May 2023"
+export function formatMemberSince(dateString) {
+  const date = new Date(dateString);
+  const month = date.toLocaleString("default", { month: "short" });
+  const year = date.getFullYear();
+  return `${month} ${year}`;
+}
+
+// Hàm định dạng ngày đăng bài, ví dụ: "May 15, 2023"
+export function formatPublishDate(dateString) {
+  const date = new Date(dateString);
+  const month = date.toLocaleString("default", { month: "long" });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
