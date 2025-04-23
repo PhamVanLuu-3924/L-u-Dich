@@ -21,15 +21,59 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { user, isLoading, register } = useAuthStore();
+  // Error state
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  // const router = useRoute();
+  const { isLoading, register } = useAuthStore();
 
-  const handleLogin = async () => {
+  const isValidEmailDomain = (email) => {
+    return email.endsWith("@gmail.com") || email.endsWith("@hotmail.com");
+  };
+
+  const handleRegister = async () => {
+    let hasError = false;
+
+    setUsernameError("");
+    setEmailError("");
+    setPasswordError("");
+
+    if (!username) {
+      setUsernameError("Vui lòng nhập tên người dùng");
+      hasError = true;
+    } else if (username.length < 3) {
+      setUsernameError("Tên người dùng phải có ít nhất 3 ký tự");
+      hasError = true;
+    }
+
+    if (!email) {
+      setEmailError("Vui lòng nhập email");
+      hasError = true;
+    } else if (!isValidEmailDomain(email)) {
+      setEmailError("Email phải là @gmail.com hoặc @hotmail.com");
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordError("Vui lòng nhập mật khẩu");
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError("Mật khẩu phải có ít nhất 6 ký tự");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
     const result = await register(username, email, password);
 
-    if (!result.success) Alert.alert("Error", result.error);
+    if (!result.success) {
+      Alert.alert("Thông báo", result.error);
+    } else {
+      Alert.alert("Thành công", "Đăng ký thành công!");
+    }
   };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -40,13 +84,15 @@ export default function Signup() {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>BookWorm🐉</Text>
-            <Text style={styles.subtitle}>Share your favorite reads</Text>
+            <Text style={styles.subtitle}>
+              Chia sẻ những cuốn sách yêu thích
+            </Text>
           </View>
 
           <View style={styles.formContainer}>
-            {/* USERNAME INPUT */}
+            {/* USERNAME */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Username</Text>
+              <Text style={styles.label}>Tên người dùng</Text>
               <View style={styles.inputContainer}>
                 <Ionicons
                   name="person-outline"
@@ -59,13 +105,35 @@ export default function Signup() {
                   placeholder="Van Luu"
                   placeholderTextColor={COLORS.placeholderText}
                   value={username}
-                  onChangeText={setUsername}
+                  onChangeText={(text) => {
+                    setUsername(text);
+                    if (usernameError) setUsernameError("");
+                  }}
                   autoCapitalize="none"
                 />
               </View>
+              {!!usernameError && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 4,
+                  }}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={14}
+                    color="red"
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={{ color: "red", fontSize: 12 }}>
+                    {usernameError}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {/* EMAIL INPUT */}
+            {/* EMAIL */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputContainer}>
@@ -79,31 +147,55 @@ export default function Signup() {
                   style={styles.input}
                   placeholder="vanluudz@gmail.com"
                   placeholderTextColor={COLORS.placeholderText}
-                  onChangeText={setEmail}
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (emailError) setEmailError("");
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
               </View>
+              {!!emailError && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 4,
+                  }}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={14}
+                    color="red"
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={{ color: "red", fontSize: 12 }}>
+                    {emailError}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {/* PASSWORD INPUT*/}
+            {/* PASSWORD */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>Mật khẩu</Text>
               <View style={styles.inputContainer}>
-                {/* LEFT ICON */}
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
-                {/* INPUT */}
                 <TextInput
                   style={styles.input}
                   placeholder="******"
                   placeholderTextColor={COLORS.placeholderText}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (passwordError) setPasswordError("");
+                  }}
                   secureTextEntry={!showPassword}
                 />
                 <TouchableOpacity
@@ -117,25 +209,45 @@ export default function Signup() {
                   />
                 </TouchableOpacity>
               </View>
+              {!!passwordError && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 4,
+                  }}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={14}
+                    color="red"
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={{ color: "red", fontSize: 12 }}>
+                    {passwordError}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* SIGNUP BUTTON */}
             <TouchableOpacity
               style={styles.button}
-              onPress={handleLogin}
+              onPress={handleRegister}
               disabled={isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Sign Up</Text>
+                <Text style={styles.buttonText}>Đăng ký</Text>
               )}
             </TouchableOpacity>
+
             {/* FOOTER */}
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
+              <Text style={styles.footerText}>Đã có tài khoản?</Text>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.link}>Login</Text>
+                <Text style={styles.link}>Đăng nhập</Text>
               </TouchableOpacity>
             </View>
           </View>

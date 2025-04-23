@@ -11,7 +11,6 @@ import styles from "../../assets/styles/login.styles.js";
 import { useState } from "react";
 import COLORS from "../../constants/colors.js";
 import { Link } from "expo-router";
-
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../store/authStore.js";
 
@@ -19,12 +18,42 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const { isLoading, login, isCheckingAuth } = useAuthStore();
 
-  const handleLogin = async () => {
-    const result = await login(email, password);
+  const isValidEmailDomain = (email) => {
+    return email.endsWith("@gmail.com") || email.endsWith("@hotmail.com");
+  };
 
-    if (!result.success) Alert.alert("Error", result.error);
+  const handleLogin = async () => {
+    let hasError = false;
+    setEmailError("");
+    setPasswordError("");
+
+    if (!email) {
+      setEmailError("Vui lòng nhập email");
+      hasError = true;
+    } else if (!isValidEmailDomain(email)) {
+      setEmailError("Email không đúng định dạng");
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordError("Vui lòng nhập mật khẩu");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const result = await login(email, password);
+    if (!result.success) {
+      let message = result.error;
+      Alert.alert("Thông báo", message);
+    } else {
+      Alert.alert("Thành công", "Đăng nhập thành công!");
+    }
   };
 
   if (isCheckingAuth) return null;
@@ -54,34 +83,55 @@ export default function Login() {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
+                placeholder="Nhập email"
                 placeholderTextColor={COLORS.placeholderText}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (emailError) setEmailError("");
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
+            {!!emailError && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 4,
+                }}
+              >
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={14}
+                  color="red"
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={{ color: "red", fontSize: 12 }}>{emailError}</Text>
+              </View>
+            )}
           </View>
 
           {/* PASSWORD */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>Mật khẩu</Text>
             <View style={styles.inputContainer}>
-              {/* LEFT ICON */}
               <Ionicons
                 name="lock-closed-outline"
                 size={20}
                 color={COLORS.primary}
                 style={styles.inputIcon}
               />
-              {/* INPUT */}
               <TextInput
                 style={styles.input}
-                placeholder="Enter your password"
+                placeholder="Nhập mật khẩu"
                 placeholderTextColor={COLORS.placeholderText}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (passwordError) setPasswordError("");
+                }}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity
@@ -95,7 +145,28 @@ export default function Login() {
                 />
               </TouchableOpacity>
             </View>
+            {!!passwordError && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 4,
+                }}
+              >
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={14}
+                  color="red"
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={{ color: "red", fontSize: 12 }}>
+                  {passwordError}
+                </Text>
+              </View>
+            )}
           </View>
+
+          {/* LOGIN BUTTON */}
           <TouchableOpacity
             style={styles.button}
             onPress={handleLogin}
@@ -104,16 +175,16 @@ export default function Login() {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>Đăng nhập</Text>
             )}
           </TouchableOpacity>
 
           {/* FOOTER */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Text style={styles.footerText}>Chưa có tài khoản?</Text>
             <Link href="/signup" asChild>
               <TouchableOpacity>
-                <Text style={styles.link}>Sign up</Text>
+                <Text style={styles.link}>Đăng ký</Text>
               </TouchableOpacity>
             </Link>
           </View>
