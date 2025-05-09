@@ -1,0 +1,1 @@
+Bài này em dùng Fontend: React Native, Backend : NodeJS, Database: MonGoDB ngoài ra dùng Cloudinary – Lưu trữ và quản lý hình ảnh và Render – Triển khai API server: dashboard.render.com Đã thêm đủ layout
