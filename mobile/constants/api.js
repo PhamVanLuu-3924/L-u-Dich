@@ -1,1 +1,1 @@
-export const API_URL = "http://192.168.125.175:3000/api";
+export const API_URL = "https://react-native-book-2.onrender.com/api";
