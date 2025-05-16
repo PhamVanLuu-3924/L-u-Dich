@@ -143,5 +143,75 @@ router.get("/:bookId/likes", protectRoute, getLikes);
 // Comment
 router.post("/:bookId/comments", protectRoute, addComment);
 router.get("/:bookId/comments", protectRoute, getComments);
+//
+router.get("/notifications", protectRoute, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const books = await Book.find({ user: userId }).select("_id");
+
+    const bookIds = books.map((b) => b._id);
+
+    // Comment notification
+    const comments = await Book.aggregate([
+      { $match: { _id: { $in: bookIds } } },
+      { $unwind: { path: "$comments", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "comments.user",
+          foreignField: "_id",
+          as: "commentUser",
+        },
+      },
+      {
+        $unwind: "$commentUser",
+      },
+      {
+        $project: {
+          type: "comment",
+          username: "$commentUser.username",
+          bookId: "$_id",
+          text: "$comments.text",
+          createdAt: "$comments.createdAt",
+        },
+      },
+    ]);
+
+    // Like notification
+    const likes = await Book.aggregate([
+      { $match: { _id: { $in: bookIds } } },
+      { $unwind: "$likes" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "likes",
+          foreignField: "_id",
+          as: "likeUser",
+        },
+      },
+      {
+        $unwind: "$likeUser",
+      },
+      {
+        $project: {
+          type: "like",
+          username: "$likeUser.username",
+          bookId: "$_id",
+          createdAt: "$createdAt",
+        },
+      },
+    ]);
+
+    const merged = [...comments, ...likes].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.json(merged);
+  } catch (err) {
+    console.log("Notification error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;

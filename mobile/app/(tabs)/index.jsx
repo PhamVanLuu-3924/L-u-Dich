@@ -235,7 +235,8 @@ function HomeScreen() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content }),
+        //
+        body: JSON.stringify({ text: content }),
       });
       fetchComment(bookId);
     } catch (e) {
